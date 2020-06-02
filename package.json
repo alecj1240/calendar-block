@@ -1,6 +1,8 @@
 {
     "dependencies": {
         "@airtable/blocks": "0.0.49",
+        "airtable": "^0.8.1",
+        "dotenv": "^8.2.0",
         "react": "^16.13.0",
         "react-dom": "^16.13.0",
         "react-google-login": "^5.1.20",
