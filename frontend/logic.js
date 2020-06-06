@@ -13,12 +13,15 @@ export async function IsUserLoggedIn(userId) {
   base('oauth').select({
     filterByFormula:'{ID}="'+userId+'"'
   }).firstPage(function(err, records) {
-    user.timestamp = records[0].get('expires_at');
-    user.recordId = records[0].getId();
-    user.refreshToken = records[0].get('refresh-token');
+    if (err) { console.error(err); return false; }
+    if (typeof records[0] !== 'undefined') {
+      user.timestamp = records[0].get('expires_at');
+      user.recordId = records[0].getId();
+      user.refreshToken = records[0].get('refresh-token');
+    }
   });
 
-  await sleep(1000);
+  await sleep(750);
 
   if (typeof user.refreshToken !== 'undefined') {
     if (Date.now() < user.timestamp) {

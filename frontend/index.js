@@ -3,6 +3,7 @@ import {session} from '@airtable/blocks';
 import React from 'react';
 import LoginScreen from './loginScreen.js';
 import {IsUserLoggedIn} from './logic.js';
+import IndexCalendar from './calendar.js';
 
 require('dotenv').config('../.env')
 
@@ -12,9 +13,9 @@ let isUserLoggedIn = IsUserLoggedIn(currentUserId);
 isUserLoggedIn.then(function(result) {
   const HelloWorldBlock = () => {
     if (result == true) {
-      return(<Text>Home Screen Calendar</Text>);
+      return <IndexCalendar userId={currentUserId} />;
     } else {
-      return(<LoginScreen />);
+      return <LoginScreen />;
     }
   }
   initializeBlock(() => <HelloWorldBlock />);
