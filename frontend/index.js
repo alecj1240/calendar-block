@@ -8,15 +8,21 @@ import IndexCalendar from './calendar.js';
 require('dotenv').config('../.env')
 
 const currentUserId = session.currentUser.id;
-let isUserLoggedIn = IsUserLoggedIn(currentUserId);
 
-isUserLoggedIn.then(function(result) {
-  const HelloWorldBlock = () => {
-    if (result == true) {
-      return <IndexCalendar userId={currentUserId} />;
-    } else {
-      return <LoginScreen />;
-    }
-  }
-  initializeBlock(() => <HelloWorldBlock />);
-});
+async function LoadPages() {
+  let isUserLoggedIn = IsUserLoggedIn(currentUserId);
+  let result = await isUserLoggedIn;
+
+  if (result == true) {
+    console.log("GOING TO RETURN IN HERE")
+    const calendarPage = await IndexCalendar(currentUserId);
+    return calendarPage;
+  } else {
+    return <LoginScreen />;
+  } 
+}
+
+LoadPages().then((result) => {
+  initializeBlock(() => result);
+})
+

@@ -1,32 +1,40 @@
 import {Text} from '@airtable/blocks/ui';
-import {session} from '@airtable/blocks';
 import React from 'react';
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+// function getEvents(calendarId) {
+//   const Url='https://www.googleapis.com/calendar/v3/calendars/' + calendarId + '/events';
+//   const Data=JSON.stringify({
+//     //client_id: process.env.REACT_APP_CLIENT_ID,
+//   });
+//   const otherParam={
+//     body:Data,
+//     method: "POST"
+//   };
+//   fetch(Url,otherParam)
+//   .then((res)=> res.json()).then(function(data){
+//     // "oauth-token": data.access_token,       
+//   }).catch(error=>console.log(error))
+
+// }
+//  if (typeof records[0] !== 'undefined') {
+//   return records[0].get('oauth-token');
+// }
+
+
+async function getOauthToken(userId) {
+  const Url='https://api.airtable.com/v0/appVzdOnR4SFUPs9G/oauth?filterByFormula={ID}="'+userId+'"';
+  console.log("URL IS: " + Url)
+  const otherParam={
+    method: "GET",
+    headers: new Headers({
+      'Authorization': "Bearer keyv18eQNXnUD0Mdn",
+    })
+  }
+  let res = await fetch(Url,otherParam).then((res) => res.json());
+  return res;
 }
 
-async function getUserOauthToken(userId) {
-  var Airtable = require('airtable');
-  var base = new Airtable({apiKey:'keyv18eQNXnUD0Mdn'}).base('appVzdOnR4SFUPs9G');  
-  var user = {};
-
-  base('oauth').select({
-    filterByFormula:'{ID}="'+userId+'"'
-  }).firstPage(function(err, records) {
-    if (err) { console.error(err); return; }
-    if (typeof records[0] !== 'undefined') {
-      user.oauthToken = records[0].get('oauth-token');
-    }
-  });
-
-  await sleep(750);
-
-  return user.oauthToken;
-}
-
-async function getPrimaryCalendarId(oauthToken) {
-  var result;
+async function getCalendarId(oauthToken) {
   const Url='https://www.googleapis.com/calendar/v3/users/me/calendarList';
   const otherParam={
     method : "GET",
@@ -34,46 +42,23 @@ async function getPrimaryCalendarId(oauthToken) {
       'Authorization': "Bearer " + oauthToken,
     })
   };
-  fetch(Url,otherParam)
-  .then((res) => res.json()).then(function(data){
-    var i;
-    for(i = 0; i < Object.keys(data.items).length; i++) {
-      if (typeof data.items[i].primary !== 'undefined') {
-        result = data.items[i].id;
-      }
+  let res = await fetch(Url,otherParam).then((res) => res.json()).catch(error=>console.log(error))
+  return res;
+}
+
+export default async function IndexCalendar(userId) {
+  const oauthTokenRes = await getOauthToken(userId);
+  const oauthToken = JSON.stringify(oauthTokenRes["records"][0]["fields"]["oauth-token"]);
+
+  const calendarIdRes = await getCalendarId(oauthToken);
+  for(var i = 0; i < Object.keys(calendarIdRes.items).length; i++) {
+    if (typeof calendarIdRes.items[i].primary !== 'undefined') {
+      let calendarId = calendarIdRes.items[i].id;
+      console.log("found the calendar id: " + calendarId);
     }
-  }).catch(error=>console.log(error))
-
-  await sleep(750);
-
-  return result;
-}
-
-function getEvents(calendarId) {
-  const Url='https://www.googleapis.com/calendar/v3/calendars/' + calendarId + '/events';
-  const Data=JSON.stringify({
-    //client_id: process.env.REACT_APP_CLIENT_ID,
-  });
-  const otherParam={
-    body:Data,
-    method: "POST"
   };
-  fetch(Url,otherParam)
-  .then((res)=> res.json()).then(function(data){
-    // "oauth-token": data.access_token,       
-  }).catch(error=>console.log(error))
 
-}
-
-export default function IndexCalendar({
-  userId
-}) {
-  getUserOauthToken(userId).then(function(token) {
-    getPrimaryCalendarId(token).then(function(primaryId) {
-      console.log("THE PRIMARY ID IS " + primaryId)
-      return (
-        <Text>Welcome to your calendar</Text>
-      )
-    });
-  });
+  return (
+  <Text>Welcome to your calendar</Text>
+  )
 }
