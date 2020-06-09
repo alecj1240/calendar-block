@@ -15,8 +15,8 @@ async function LoadPages() {
 
   if (result == true) {
     console.log("GOING TO RETURN IN HERE")
-    const calendarPage = await IndexCalendar(currentUserId);
-    return calendarPage;
+    const CalendarPage = await IndexCalendar(currentUserId);
+    return CalendarPage;
   } else {
     return <LoginScreen />;
   } 

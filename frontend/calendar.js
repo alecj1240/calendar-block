@@ -1,29 +1,8 @@
-import {Text} from '@airtable/blocks/ui';
+import {Text, Heading} from '@airtable/blocks/ui';
 import React from 'react';
-
-// function getEvents(calendarId) {
-//   const Url='https://www.googleapis.com/calendar/v3/calendars/' + calendarId + '/events';
-//   const Data=JSON.stringify({
-//     //client_id: process.env.REACT_APP_CLIENT_ID,
-//   });
-//   const otherParam={
-//     body:Data,
-//     method: "POST"
-//   };
-//   fetch(Url,otherParam)
-//   .then((res)=> res.json()).then(function(data){
-//     // "oauth-token": data.access_token,       
-//   }).catch(error=>console.log(error))
-
-// }
-//  if (typeof records[0] !== 'undefined') {
-//   return records[0].get('oauth-token');
-// }
-
 
 async function getOauthToken(userId) {
   const Url='https://api.airtable.com/v0/appVzdOnR4SFUPs9G/oauth?filterByFormula={ID}="'+userId+'"';
-  console.log("URL IS: " + Url)
   const otherParam={
     method: "GET",
     headers: new Headers({
@@ -42,23 +21,59 @@ async function getCalendarId(oauthToken) {
       'Authorization': "Bearer " + oauthToken,
     })
   };
-  let res = await fetch(Url,otherParam).then((res) => res.json()).catch(error=>console.log(error))
-  return res;
+  const calendarIdRes = await fetch(Url,otherParam).then((res) => res.json()).catch(error=>console.log(error))
+
+  for(var i = 0; i < Object.keys(calendarIdRes.items).length; i++) {
+    if (typeof calendarIdRes.items[i].primary !== 'undefined') {
+      return calendarIdRes.items[i].id;
+    }
+  }
+} 
+
+async function getTodayEvents(calendarId, oauthToken) {
+  var url= new URL('https://www.googleapis.com/calendar/v3/calendars/' + calendarId + '/events');
+  const futureDate = (new Date()).setHours(23,59,59,59); 
+  const otherParam={
+    method: "GET",
+    headers: new Headers({
+      'Authorization': "Bearer " + oauthToken,
+    }),
+  };
+  const GETParams = {
+    singleEvents: true,
+    orderBy: 'startTime',
+    timeMin: (new Date(Date.now())).toISOString(),
+    timeMax: (new Date(futureDate)).toISOString(),
+  };
+  url.search = new URLSearchParams(GETParams).toString();
+  let res = await fetch(url,otherParam).then((res)=> res.json()).catch(error=>console.log(error))
+
+  let todayEvents = [];
+  for(var i=0; i < Object.keys(res.items).length; i++) {
+    todayEvents.push(res.items[i]["summary"]);
+    if (i == (Object.keys(res.items).length - 1)) {
+      return todayEvents;
+    }
+  }
+
 }
 
 export default async function IndexCalendar(userId) {
   const oauthTokenRes = await getOauthToken(userId);
   const oauthToken = JSON.stringify(oauthTokenRes["records"][0]["fields"]["oauth-token"]);
 
-  const calendarIdRes = await getCalendarId(oauthToken);
-  for(var i = 0; i < Object.keys(calendarIdRes.items).length; i++) {
-    if (typeof calendarIdRes.items[i].primary !== 'undefined') {
-      let calendarId = calendarIdRes.items[i].id;
-      console.log("found the calendar id: " + calendarId);
-    }
-  };
+  const calendarId = await getCalendarId(oauthToken);
+
+  const eventsRes = await getTodayEvents(calendarId, oauthToken);
+  console.log("YOUR EVENTS: " + eventsRes);
 
   return (
-  <Text>Welcome to your calendar</Text>
+  <div>
+    <Heading>Welcome to your calendar</Heading>
+    <Text size="xlarge">Today's Events</Text>
+    {eventsRes.map(function(name, index){
+      return <li key={ index }>{name}</li>;
+     })}
+  </div>
   )
 }
