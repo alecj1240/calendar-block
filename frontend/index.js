@@ -10,16 +10,13 @@ require('dotenv').config('../.env')
 const currentUserId = session.currentUser.id;
 
 async function LoadPages() {
-  let isUserLoggedIn = IsUserLoggedIn(currentUserId);
-  let result = await isUserLoggedIn;
-
-  if (result == true) {
-    console.log("GOING TO RETURN IN HERE")
-    const CalendarPage = await IndexCalendar(currentUserId);
-    return CalendarPage;
-  } else {
+  let isUserLoggedIn = await IsUserLoggedIn(currentUserId);
+  if (isUserLoggedIn == false) {
     return <LoginScreen />;
-  } 
+  }
+
+  const CalendarPage = await IndexCalendar(currentUserId);
+  return CalendarPage;
 }
 
 LoadPages().then((result) => {

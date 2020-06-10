@@ -6,28 +6,28 @@ function sleep(ms) {
 
 // determine if the user is logged in
 export async function IsUserLoggedIn(userId) {
-  var Airtable = require('airtable');
-  var base = new Airtable({apiKey:'keyv18eQNXnUD0Mdn'}).base('appVzdOnR4SFUPs9G');  
   var user = {loggedIn: false};
 
-  base('oauth').select({
-    filterByFormula:'{ID}="'+userId+'"'
-  }).firstPage(function(err, records) {
-    if (err) { console.error(err); return false; }
-    if (typeof records[0] !== 'undefined') {
-      user.timestamp = records[0].get('expires_at');
-      user.recordId = records[0].getId();
-      user.refreshToken = records[0].get('refresh-token');
-    }
-  });
+  const Url='https://api.airtable.com/v0/appVzdOnR4SFUPs9G/oauth?filterByFormula={ID}="'+userId+'"';
+  const otherParam={
+    method: "GET",
+    headers: new Headers({
+      'Authorization': "Bearer keyv18eQNXnUD0Mdn",
+    })
+  }
+  let res = await fetch(Url,otherParam).then((res) => res.json());
 
-  await sleep(750);
+  if (typeof res["records"][0] !== 'undefined') {
+    user.refreshToken = JSON.stringify(res["records"][0]["fields"]["refresh-token"]);
+    user.timestamp = JSON.stringify(res["records"][0]["fields"]["expires_at"]);
+    user.recordId =  JSON.stringify(res["records"][0]["id"]);
+  }
 
   if (typeof user.refreshToken !== 'undefined') {
     if (Date.now() < user.timestamp) {
       user.loggedIn = true;
     } else {
-      var isTokenRefreshed = refreshAuthToken(user.refreshToken, user.recordId); 
+      var isTokenRefreshed = refreshAuthToken(user.refreshToken, user.recordId);         
       if (isTokenRefreshed == true) {
         user.loggedIn = true;
       }
@@ -38,11 +38,9 @@ export async function IsUserLoggedIn(userId) {
 }
 
 // update auth token with the refresh token
-function refreshAuthToken(refreshToken, recordId) {
-var Airtable = require('airtable');
-var base = new Airtable({apiKey:'keyv18eQNXnUD0Mdn'}).base('appVzdOnR4SFUPs9G');  
+async function refreshAuthToken(refreshToken, recordId) {
 
-const Url='https://oauth2.googleapis.com/token';
+  let Url='https://oauth2.googleapis.com/token';
   const Data=JSON.stringify({
     refresh_token: refreshToken,
     client_id: '104634558751-1ti20v7urgs8r8cdcg36n67atp0sejin.apps.googleusercontent.com',
@@ -53,26 +51,38 @@ const Url='https://oauth2.googleapis.com/token';
     body:Data,
     method: "POST"
   };
-  fetch(Url,otherParam)
-  .then((res)=> res.json()).then(function(data){
-    if(typeof data.access_token !== 'undefined') {
-      base('oauth').update([
-        {
-          "id": recordId,
-          "fields": {
-            "oauth-token": data.access_token,
-            "expires_at": (data.expires_in * 1000) + Date.now()
-          }
+
+  let res = await fetch(Url,otherParam).then((data)=> data.json())
+
+  let newUrl='https://api.airtable.com/v0/appVzdOnR4SFUPs9G/oauth';
+  const Body={
+    "records": [
+      {
+        "id":recordId,
+        "fields": {
+          "oauth-token": res.access_token,
+          "expires_at": (res.expires_in * 1000) + Date.now()
         }
-      ], function(err, records) {
-        if (err) {
-          console.error(err);
-          return false;
-        }
-      });    
-    } 
-  }).catch(error=>console.log(error))
-  return true;
+      }
+    ]
+  }
+  const newParam={
+    method: "PATCH",
+    headers: new Headers({
+      'Authorization': "Bearer keyv18eQNXnUD0Mdn"
+    }),
+    body: Body
+  }
+
+  let airtableRes = await fetch(newUrl,newParam).then((data)=> data.json())
+
+  let newTimestamp = JSON.stringify(airtableRes["records"][0]["fields"]["expires_at"]);
+
+  if (newTimestamp > Date.now()) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 // determine if the user is on a selected date or on an email

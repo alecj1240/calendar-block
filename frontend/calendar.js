@@ -49,13 +49,17 @@ async function getTodayEvents(calendarId, oauthToken) {
   let res = await fetch(url,otherParam).then((res)=> res.json()).catch(error=>console.log(error))
 
   let todayEvents = [];
-  for(var i=0; i < Object.keys(res.items).length; i++) {
-    todayEvents.push(res.items[i]["summary"]);
-    if (i == (Object.keys(res.items).length - 1)) {
-      return todayEvents;
+
+  if (Object.keys(res.items).length > 0) {
+    for(var i=0; i < Object.keys(res.items).length; i++) {
+      todayEvents.push(res.items[i]["summary"]);
+      if (i == (Object.keys(res.items).length - 1)) {
+        return todayEvents;
+      }
     }
   }
 
+  return [];
 }
 
 export default async function IndexCalendar(userId) {
