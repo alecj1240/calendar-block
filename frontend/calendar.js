@@ -62,7 +62,7 @@ async function getTodayEvents(calendarId, oauthToken) {
   return [];
 }
 
-export default async function IndexCalendar(userId) {
+export async function IndexCalendar(userId) {
   const oauthTokenRes = await getOauthToken(userId);
   const oauthToken = JSON.stringify(oauthTokenRes["records"][0]["fields"]["oauth-token"]);
 
