@@ -1,33 +1,31 @@
-import {initializeBlock, Text, useLoadable, useWatchable, useBase,} from '@airtable/blocks/ui';
+import {initializeBlock, useBase, useWatchable, useLoadable} from '@airtable/blocks/ui';
 import {session,cursor} from '@airtable/blocks';
 import React, {useState, useEffect}from 'react';
 import LoginScreen from './loginScreen.js';
-import {IsUserLoggedIn, RecordCalendar} from './logic.js';
+import {IsUserLoggedIn} from './logic.js';
 import {IndexCalendar} from './calendar.js';
+import { GetRecordDate } from './dateCalendar.js';
 
 require('dotenv').config('../.env')
 
 const currentUserId = session.currentUser.id;
-console.log("CURRENT USER ID: " + currentUserId);
 
 const LoadPages = () => {
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(null);
+  const [calendarPage, setCalendarPage] = useState(null);
+  const [recordPage, setRecordPage] = useState(null);
 
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState('');
-  const [calendarPage, setCalendarPage] = useState('');
-  const [selectPage, setSelectPage] = useState('');
   const [selectedRecordId, setSelectedRecordId] = useState(null);
   const [selectedFieldId, setSelectedFieldId] = useState(null);
 
-  const base = useBase();
-  const activeTable = base.getTableByIdIfExists(cursor.activeTableId);
-
   useLoadable(cursor);
+
   useWatchable(cursor, ['selectedRecordIds', 'selectedFieldIds'], () => {
     if (cursor.selectedRecordIds.length > 0) {
-      setSelectedRecordId(cursor.selectedRecordIds[0]);
+        setSelectedRecordId(cursor.selectedRecordIds[0]);
     }
     if (cursor.selectedFieldIds.length > 0) {
-      setSelectedFieldId(cursor.selectedFieldIds[0]);
+        setSelectedFieldId(cursor.selectedFieldIds[0]);
     }
   });
 
@@ -36,47 +34,55 @@ const LoadPages = () => {
     setSelectedFieldId(null);
   });
 
-  // get the code to display the calendar page
-  const getCalendarPage = async () => {
-    const indexdata = await IndexCalendar(currentUserId);
-    setCalendarPage(indexdata)
-  }
+  const base = useBase();
+  const activeTable = base.getTableByIdIfExists(cursor.activeTableId);
 
-  // get the code to display the login page
-  const getUserLoggedIn = async () => {
-    const logindata = await IsUserLoggedIn(currentUserId);
-    setIsUserLoggedIn(logindata);
-  }
-
+  // watching for a change in the page
   useEffect(() => {
     if(!calendarPage) {
-      getCalendarPage();
+      const calendarPageFunction = async () => {
+        const indexdata = await IndexCalendar(currentUserId);
+        setCalendarPage(indexdata)
+      }
+      calendarPageFunction();
     }
-  }, [calendarPage]);
+  }, []);
 
   useEffect(() => {
     if(!isUserLoggedIn) {
-      getUserLoggedIn();
+      const loginFunction = async () => {
+        const logindata = await IsUserLoggedIn(currentUserId);
+        setIsUserLoggedIn(logindata);
+      }
+      loginFunction()
     }
-  }, [isUserLoggedIn]);
+  }, []);
 
   useEffect(() => {
-    if(!selectPage) {
-      setSelectPage(selectedRecordId);
+    if(selectedRecordId) {
+      const recordPageFunction = async () => {
+        //const recordPage = <GetRecordDate activeTable={activeTable} selectedRecordId={selectedRecordId} selectedFieldId={selectedFieldId} />
+        const recordPage = GetRecordDate(activeTable,selectedRecordId,selectedFieldId);
+        setRecordPage(recordPage)
+      }
+      recordPageFunction();
     }
-  }, [selectedRecordId]);
+  }, [selectedRecordId])
 
-  if(selectPage) {
-    return <RecordCalendar activeTable={activeTable} selectedRecordId={selectedRecordId} selectedFieldId={selectedFieldId}/>
+  // ready to display the page information
+  if (isUserLoggedIn == false) {
+    return <LoginScreen userId={currentUserId} />;
+  }
+
+  if(recordPage) {
+    return recordPage;
   }
 
   if(calendarPage) {
     return calendarPage;
-  }
+  } 
 
-  if (isUserLoggedIn == false) {
-    return <LoginScreen userId={currentUserId} />;
-  }
+  
 
   return ("fetching data from your calendar...")
 }
