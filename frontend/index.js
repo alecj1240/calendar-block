@@ -61,8 +61,8 @@ const LoadPages = () => {
   useEffect(() => {
     if(selectedRecordId) {
       const recordPageFunction = async () => {
-        //const recordPage = <GetRecordDate activeTable={activeTable} selectedRecordId={selectedRecordId} selectedFieldId={selectedFieldId} />
-        const recordPage = GetRecordDate(activeTable,selectedRecordId,selectedFieldId);
+        const recordPage = <GetRecordDate activeTable={activeTable} selectedRecordId={selectedRecordId} selectedFieldId={selectedFieldId} currentUserId={currentUserId}/>
+        //const recordPage = GetRecordDate(activeTable,selectedRecordId,selectedFieldId,currentUserId);
         setRecordPage(recordPage)
       }
       recordPageFunction();
@@ -81,8 +81,6 @@ const LoadPages = () => {
   if(calendarPage) {
     return calendarPage;
   } 
-
-  
 
   return ("fetching data from your calendar...")
 }

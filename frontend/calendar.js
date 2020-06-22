@@ -33,6 +33,8 @@ async function getCalendarId(oauthToken) {
 async function getTodayEvents(calendarId, oauthToken, selectedDate) {
   var url= new URL('https://www.googleapis.com/calendar/v3/calendars/' + calendarId + '/events');
   const futureDate = selectedDate.setHours(23,59,59,59); 
+  console.log("Selected Date ISO: " + selectedDate.toISOString());
+  console.log("Future Date ISO: " + (new Date(futureDate)).toISOString());
   const otherParam={
     method: "GET",
     headers: new Headers({
@@ -63,13 +65,14 @@ async function getTodayEvents(calendarId, oauthToken, selectedDate) {
 }
 
 export async function IndexCalendar(userId, selectedDate = (new Date(Date.now()))) {
+  console.log("the selected date: " + selectedDate.toDateString() + " and the userId: " + userId);
   const oauthTokenRes = await getOauthToken(userId);
   const oauthToken = JSON.stringify(oauthTokenRes["records"][0]["fields"]["oauth-token"]);
 
   const calendarId = await getCalendarId(oauthToken);
 
   const eventsRes = await getTodayEvents(calendarId, oauthToken, selectedDate);
-  console.log("YOUR EVENTS: " + eventsRes);
+  console.log("YOUR EVENTS: " + eventsRes + "for " + selectedDate.toDateString());
 
   return (
   <div>

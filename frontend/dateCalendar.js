@@ -2,11 +2,13 @@
 import { useRecordById, Text, useWatchable} from '@airtable/blocks/ui';
 import {ViewType} from '@airtable/blocks/models';
 import {cursor} from '@airtable/blocks';
-import React, {Fragment} from 'react';
+import React, {Fragment, useEffect, useState} from 'react';
+import { IndexCalendar } from './calendar';
 
 // determine if the user is on a selected date or on an email
-export function GetRecordDate({activeTable, selectedRecordId, selectedFieldId}) {
-    console.log("hitting this function");
+export function GetRecordDate({activeTable, selectedRecordId, selectedFieldId, currentUserId}) {
+    const [indexPage, setIndexPage] = useState(null);
+
     const selectedField = selectedFieldId ? activeTable.getFieldByIdIfExists(selectedFieldId) : null;
     const selectedRecord = useRecordById(activeTable, selectedRecordId ? selectedRecordId : '', {
       fields: [selectedField],
@@ -27,8 +29,27 @@ export function GetRecordDate({activeTable, selectedRecordId, selectedFieldId}) 
       }
       const parsedDate = Date.parse(cellValue);
       const paramDate = new Date(parsedDate);
-      return (
-          <Text>{paramDate.toDateString}</Text>
-      );
+      console.log("we got the date: " + paramDate.toDateString());
+      
+      useEffect(() => {
+        if (!indexPage) {
+          const getIndexPage = async (userId) => {
+              const IndexPageWithDate = await IndexCalendar(userId,paramDate)
+              setIndexPage(IndexPageWithDate);
+          }
+          getIndexPage(currentUserId);
+          
+        }
+      }, []);
+
+      if (indexPage) {
+        return (
+          <div>
+              {indexPage}
+          </div>
+        );
+      }
+
+      return ("fetching data from your calendar...")
     }
   }
