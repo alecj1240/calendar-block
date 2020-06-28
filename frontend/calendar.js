@@ -30,11 +30,29 @@ async function getCalendarId(oauthToken) {
   }
 } 
 
+function addTimeZoneToDate(theDate) {
+  // theDate should be an ISO string
+  var newDate = theDate;
+  newDate = newDate.substring(0, newDate.length - 1);
+  var timeZoneOffset = (new Date()).getTimezoneOffset();
+  if (timeZoneOffset > 0) {
+    var direction = "-"
+  } else {
+    var direction = "+"
+  }
+  if ((timeZoneOffset/60) < 10 ) {
+    var floatingZero = "0";
+  } else {
+    var floatingZero = "";
+  }
+  newDate = newDate + direction + floatingZero + (timeZoneOffset/60).toString() + ":00";
+  return newDate;
+}
+
 async function getTodayEvents(calendarId, oauthToken, selectedDate) {
   var url= new URL('https://www.googleapis.com/calendar/v3/calendars/' + calendarId + '/events');
-  const futureDate = selectedDate.setHours(23,59,59,59); 
-  console.log("Selected Date ISO: " + selectedDate.toISOString());
-  console.log("Future Date ISO: " + (new Date(futureDate)).toISOString());
+  const futureDate = (new Date(selectedDate));
+  futureDate.setDate(futureDate.getDate() + 1);
   const otherParam={
     method: "GET",
     headers: new Headers({
@@ -44,8 +62,8 @@ async function getTodayEvents(calendarId, oauthToken, selectedDate) {
   const GETParams = {
     singleEvents: true,
     orderBy: 'startTime',
-    timeMin: selectedDate.toISOString(),
-    timeMax: (new Date(futureDate)).toISOString(),
+    timeMin: addTimeZoneToDate((new Date(selectedDate)).toISOString()),
+    timeMax: addTimeZoneToDate((new Date(futureDate)).toISOString()),
   };
   url.search = new URLSearchParams(GETParams).toString();
   let res = await fetch(url,otherParam).then((res)=> res.json()).catch(error=>console.log(error))
@@ -64,23 +82,22 @@ async function getTodayEvents(calendarId, oauthToken, selectedDate) {
   return [];
 }
 
-export async function IndexCalendar(userId, selectedDate = (new Date(Date.now()))) {
-  console.log("the selected date: " + selectedDate.toDateString() + " and the userId: " + userId);
+export async function IndexCalendar(userId, selectedDate = Date.now()) {
   const oauthTokenRes = await getOauthToken(userId);
   const oauthToken = JSON.stringify(oauthTokenRes["records"][0]["fields"]["oauth-token"]);
 
   const calendarId = await getCalendarId(oauthToken);
-
   const eventsRes = await getTodayEvents(calendarId, oauthToken, selectedDate);
-  console.log("YOUR EVENTS: " + eventsRes + "for " + selectedDate.toDateString());
+
+  const displayString = (new Date(addTimeZoneToDate((new Date(selectedDate)).toISOString()))).toDateString();
 
   return (
-  <div>
-    <Heading>Welcome to your calendar</Heading>
-    <Text size="xlarge">Today's Events</Text>
-    {eventsRes.map(function(name, index){
-      return <li key={ index }>{name}</li>;
-     })}
-  </div>
+    <div>
+      <Heading>Welcome to your calendar</Heading>
+    <Text size="xlarge">Events for {displayString}</Text>
+      {eventsRes.map(function(name, index){
+        return <li key={ index }>{name}</li>;
+      })}
+    </div>
   )
 }
