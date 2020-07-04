@@ -1,10 +1,11 @@
-import {initializeBlock, useBase, useWatchable, useLoadable} from '@airtable/blocks/ui';
+import {initializeBlock, useBase, useWatchable, useLoadable, Loader, Box, Heading} from '@airtable/blocks/ui';
 import {session,cursor} from '@airtable/blocks';
 import React, {useState, useEffect}from 'react';
 import LoginScreen from './loginScreen.js';
 import {IsUserLoggedIn} from './logic.js';
 import {IndexCalendar} from './calendar.js';
 import { GetRecordDate } from './dateCalendar.js';
+import CalendarDialog from './createEvent.js';
 
 require('dotenv').config('../.env')
 
@@ -37,6 +38,16 @@ const LoadPages = () => {
   const base = useBase();
   const activeTable = base.getTableByIdIfExists(cursor.activeTableId);
 
+  useEffect(() => {
+    if(!isUserLoggedIn) {
+      const loginFunction = async () => {
+        const logindata = await IsUserLoggedIn(currentUserId);
+        setIsUserLoggedIn(logindata);
+      }
+      loginFunction()
+    }
+  }, []);
+
   // watching for a change in the page
   useEffect(() => {
     if(!calendarPage) {
@@ -45,16 +56,6 @@ const LoadPages = () => {
         setCalendarPage(indexdata)
       }
       calendarPageFunction();
-    }
-  }, []);
-
-  useEffect(() => {
-    if(!isUserLoggedIn) {
-      const loginFunction = async () => {
-        const logindata = await IsUserLoggedIn(currentUserId);
-        setIsUserLoggedIn(logindata);
-      }
-      loginFunction()
     }
   }, []);
 
@@ -75,14 +76,36 @@ const LoadPages = () => {
   }
 
   if(recordPage) {
-    return recordPage;
+    return (
+      <div>
+        {recordPage}
+      </div>
+    );
   }
 
   if(calendarPage) {
-    return calendarPage;
+    return (
+      <div>
+        {calendarPage}
+        <CalendarDialog />
+      </div>
+    );
   } 
 
-  return ("fetching data from your calendar...")
+  return (
+    <Box
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      backgroundColor="white"
+      padding={0}
+      height={200}
+      overflow="hidden"
+    >
+      <Loader scale={0.3} />
+      <Heading marginLeft={1}>Fetching data from you calendar...</Heading>
+    </Box>
+  );
 }
 
 initializeBlock(() => <LoadPages />)

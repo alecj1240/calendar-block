@@ -1,10 +1,11 @@
 // will show the user her calendar for the day that they've selected
-import { useRecordById, Text, useWatchable} from '@airtable/blocks/ui';
+import { useRecordById, Text, useWatchable, Loader, Heading, Box} from '@airtable/blocks/ui';
 import {ViewType} from '@airtable/blocks/models';
 import {cursor} from '@airtable/blocks';
-import React, {Fragment, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import { IndexCalendar } from './calendar';
-import Iframe from 'react-iframe';
+import CalendarDialog from './createEvent.js';
+
 
 // determine if the user is on a selected date or on an email
 export function GetRecordDate({activeTable, selectedRecordId, selectedFieldId, currentUserId}) {
@@ -50,10 +51,23 @@ export function GetRecordDate({activeTable, selectedRecordId, selectedFieldId, c
       return (
         <div>
             {indexPage}
+            <CalendarDialog selectedDate={cellValue}/>
         </div>
       );
     }
 
-    return ("fetching data from your calendar...")
-
+    return (
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        backgroundColor="white"
+        padding={0}
+        height={200}
+        overflow="hidden"
+      >
+        <Loader scale={0.3} />
+        <Heading marginLeft={1}>Fetching data from you calendar...</Heading>
+      </Box>
+    );
   }

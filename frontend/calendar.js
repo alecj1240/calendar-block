@@ -1,4 +1,4 @@
-import {Text, Heading} from '@airtable/blocks/ui';
+import {Heading, Box, Link, Icon, Dialog, Input} from '@airtable/blocks/ui';
 import React from 'react';
 
 async function getOauthToken(userId) {
@@ -49,6 +49,13 @@ function addTimeZoneToDate(theDate) {
   return newDate;
 }
 
+function checkTime(i) {
+  if (i < 10) {
+    i = "0" + i;
+  }
+  return i;
+}
+
 async function getTodayEvents(calendarId, oauthToken, selectedDate) {
   var url= new URL('https://www.googleapis.com/calendar/v3/calendars/' + calendarId + '/events');
   const futureDate = (new Date(selectedDate));
@@ -72,7 +79,9 @@ async function getTodayEvents(calendarId, oauthToken, selectedDate) {
 
   if (Object.keys(res.items).length > 0) {
     for(var i=0; i < Object.keys(res.items).length; i++) {
-      todayEvents.push(res.items[i]["summary"]);
+      var newEvent = [];
+      newEvent.push(res.items[i]["summary"], res.items[i]["start"]["dateTime"], res.items[i]["htmlLink"]);
+      todayEvents.push(newEvent);
       if (i == (Object.keys(res.items).length - 1)) {
         return todayEvents;
       }
@@ -82,22 +91,66 @@ async function getTodayEvents(calendarId, oauthToken, selectedDate) {
   return [];
 }
 
-export async function IndexCalendar(userId, selectedDate = Date.now()) {
+export async function IndexCalendar(userId, selectedDate = {}) {
+  if (typeof selectedDate == 'object') {
+    selectedDate = (new Date(Date.now()))
+    selectedDate = selectedDate.setMinutes(selectedDate.getMinutes() - (new Date()).getTimezoneOffset());
+  }
+
   const oauthTokenRes = await getOauthToken(userId);
   const oauthToken = JSON.stringify(oauthTokenRes["records"][0]["fields"]["oauth-token"]);
-
   const calendarId = await getCalendarId(oauthToken);
   const eventsRes = await getTodayEvents(calendarId, oauthToken, selectedDate);
-
   const displayString = (new Date(addTimeZoneToDate((new Date(selectedDate)).toISOString()))).toDateString();
+
+  var counter = 0;
 
   return (
     <div>
-      <Heading>Welcome to your calendar</Heading>
-    <Text size="xlarge">Events for {displayString}</Text>
-      {eventsRes.map(function(name, index){
-        return <li key={ index }>{name}</li>;
-      })}
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        backgroundColor="white"
+        borderRadius="none"
+        paddingTop={1}
+        overflow="hidden"
+        border="default"
+      >
+        <Heading size="xlarge">{displayString}</Heading>
+      </Box>
+      {eventsRes.map(function(event){
+        counter += 1;
+        var backgroundColor = "white";
+        if (counter % 2 == 0) {
+          var backgroundColor = "lightGray1"
+        }
+        var eventDate = (new Date(Date.parse(event[1])));
+        var displayString = eventDate.getHours() + ":" + checkTime(eventDate.getMinutes())
+        if (Number.isNaN(eventDate.getHours())) {
+          displayString = "";
+        }
+        return (
+          <div>
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              backgroundColor={backgroundColor}
+              borderRadius="large"
+              padding={2}
+              overflow="hidden"
+            >
+              <Link href={event[2]} target="_blank">
+                <Icon name="calendar" size={12} marginRight={1}/>
+                <Heading size="xsmall" marginRight={2} textColor="grey"> {displayString} </Heading>
+                <Heading size="default"> {event[0]} </Heading>
+              </Link>
+            </Box>
+          </div>
+        );
+        })}
     </div>
   )
 }
+
