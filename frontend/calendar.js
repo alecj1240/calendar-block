@@ -1,7 +1,10 @@
 import {Heading, Box, Link, Icon, Text} from '@airtable/blocks/ui';
 import React from 'react';
+import LoginScreen from './loginScreen';
+import { IsUserLoggedIn } from './logic';
 
 async function getOauthToken(userId) {
+  const checkUser = await IsUserLoggedIn(userId);
   const Url='https://api.airtable.com/v0/appVzdOnR4SFUPs9G/oauth?filterByFormula={ID}="'+userId+'"';
   const otherParam={
     method: "GET",
@@ -93,12 +96,18 @@ async function getTodayEvents(calendarId, oauthToken, selectedDate) {
 }
 
 export async function IndexCalendar(userId, selectedDate = {}) {
+  const checkUser = await IsUserLoggedIn(userId);
   if (typeof selectedDate == 'object') {
     selectedDate = (new Date(Date.now()))
     selectedDate = selectedDate.setMinutes(selectedDate.getMinutes() - (new Date()).getTimezoneOffset());
   }
 
   const oauthTokenRes = await getOauthToken(userId);
+
+  if (typeof oauthTokenRes["records"][0] == 'undefined' && checkUser == false) {
+    return <LoginScreen userId={userId} />
+  }
+
   const calendarId = await getCalendarId(oauthTokenRes["records"][0]["fields"]["oauth-token"]);
   const eventsRes = await getTodayEvents(calendarId, oauthTokenRes["records"][0]["fields"]["oauth-token"], selectedDate);
   const displayString = (new Date(addTimeZoneToDate((new Date(selectedDate)).toISOString()))).toDateString();
