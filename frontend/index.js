@@ -46,7 +46,7 @@ const LoadPages = () => {
       }
       loginFunction()
     }
-  }, []);
+  });
 
   // watching for a change in the page
   useEffect(() => {
@@ -57,7 +57,7 @@ const LoadPages = () => {
       }
       calendarPageFunction();
     }
-  }, []);
+  }, [calendarPage]);
 
   useEffect(() => {
     if(selectedRecordId) {
@@ -68,7 +68,7 @@ const LoadPages = () => {
       }
       recordPageFunction();
     }
-  }, [selectedRecordId])
+  }, [selectedRecordId]);
 
   // ready to display the page information
   if (isUserLoggedIn == false) {

@@ -22,10 +22,12 @@ export async function IsUserLoggedIn(userId) {
   if (typeof user.refreshToken !== 'undefined') {
     if (Date.now() < user.timestamp) {
       user.loggedIn = true;
+      return user.loggedIn;
     } else {
       var isTokenRefreshed = refreshAuthToken(user.refreshToken, user.recordId);         
       if (isTokenRefreshed == true) {
         user.loggedIn = true;
+        return user.loggedIn;
       }
     }
   }

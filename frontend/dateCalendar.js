@@ -41,8 +41,25 @@ export function GetRecordDate({activeTable, selectedRecordId, selectedFieldId, c
 
     const cellValue = selectedRecord.getCellValue(selectedField);
 
+
+    if ((selectedField.type !== 'date' && selectedField.type !== 'dateTime') && plainIndexPage) {
+      return (
+        <div>
+          {plainIndexPage}
+          <CalendarDialog />
+        </div>
+      ); 
+    } else if ((selectedField.type !== 'date' && selectedField.type !== 'dateTime') && !plainIndexPage) {
+      return <Text>You have not selected a valid field type</Text>;
+    }
+
     if (!cellValue && plainIndexPage) {
-      return (<div>{plainIndexPage}</div>); 
+      return (
+        <div>
+          {plainIndexPage}
+          <CalendarDialog />
+        </div>
+      ); 
     }
 
     const paramDate = Date.parse(cellValue);

@@ -1,8 +1,7 @@
 import React, {useState} from "react";
-import {Button, Dialog, Heading, Input, Text} from "@airtable/blocks/ui";
+import {Button, Dialog, Heading, Input, Box, Text} from "@airtable/blocks/ui";
 
 export default function CalendarDialog(paramDate) {
-  console.log("the param date is: " + paramDate["selectedDate"]);
   if (typeof paramDate["selectedDate"] == 'undefined') {
     var selectedDate = (new Date(Date.now()))
     selectedDate = selectedDate.setMinutes(selectedDate.getMinutes() - (new Date()).getTimezoneOffset());
@@ -36,7 +35,6 @@ export default function CalendarDialog(paramDate) {
 
 
   const handleNewEvent = (title,start,end,desc) => {
-    console.log("Start time: " + start);
     var url = new URL('https://www.google.com/calendar/render');
 
     var urlParams = {
@@ -50,8 +48,23 @@ export default function CalendarDialog(paramDate) {
     window.open(url);
   }
 
+  const handleClose = () => {
+    setIsDialogOpen(false);
+    setTitleValue("");
+    setStartTime("");
+    setEndTime("");
+    setDescription("");
+  }
+
   return (
     <React.Fragment>
+      <Box
+        display="flex"
+        marginLeft={1}
+        borderRadius="large"
+        padding={2}
+        overflow="hidden"
+      >
       <Button onClick={() => setIsDialogOpen(true)}>Add Event</Button>
       {isDialogOpen && (
         <Dialog onClose={() => setIsDialogOpen(false)}>
@@ -83,10 +96,11 @@ export default function CalendarDialog(paramDate) {
             onChange={e => setDescription(e.target.value)}
             placeholder="description"
           />
-          <Button onClick={() => handleNewEvent(titleValue,startTime,endTime,description)}>Create New Event</Button>
-          <Button onClick={() => setIsDialogOpen(false)}>Close</Button>
+          <Button onClick={() => handleNewEvent(titleValue,startTime,endTime,description)} marginTop={1} type="submit">Create New Event</Button>
+          <Button onClick={() => handleClose()} marginTop={1} marginLeft={1}>Close</Button>
         </Dialog>
       )}
+      </Box>
     </React.Fragment>
   );
 }

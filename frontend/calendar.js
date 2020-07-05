@@ -1,4 +1,4 @@
-import {Heading, Box, Link, Icon, Dialog, Input} from '@airtable/blocks/ui';
+import {Heading, Box, Link, Icon, Text} from '@airtable/blocks/ui';
 import React from 'react';
 
 async function getOauthToken(userId) {
@@ -14,6 +14,7 @@ async function getOauthToken(userId) {
 }
 
 async function getCalendarId(oauthToken) {
+  console.log("the oauth token for request: " + oauthToken)
   const Url='https://www.googleapis.com/calendar/v3/users/me/calendarList';
   const otherParam={
     method : "GET",
@@ -98,9 +99,8 @@ export async function IndexCalendar(userId, selectedDate = {}) {
   }
 
   const oauthTokenRes = await getOauthToken(userId);
-  const oauthToken = JSON.stringify(oauthTokenRes["records"][0]["fields"]["oauth-token"]);
-  const calendarId = await getCalendarId(oauthToken);
-  const eventsRes = await getTodayEvents(calendarId, oauthToken, selectedDate);
+  const calendarId = await getCalendarId(oauthTokenRes["records"][0]["fields"]["oauth-token"]);
+  const eventsRes = await getTodayEvents(calendarId, oauthTokenRes["records"][0]["fields"]["oauth-token"], selectedDate);
   const displayString = (new Date(addTimeZoneToDate((new Date(selectedDate)).toISOString()))).toDateString();
 
   var counter = 0;
@@ -109,7 +109,7 @@ export async function IndexCalendar(userId, selectedDate = {}) {
     <div>
       <Box
         display="flex"
-        alignItems="center"
+        alignItems="left"
         justifyContent="center"
         backgroundColor="white"
         borderRadius="none"
@@ -134,8 +134,9 @@ export async function IndexCalendar(userId, selectedDate = {}) {
           <div>
             <Box
               display="flex"
-              alignItems="center"
-              justifyContent="center"
+              //alignItems="center"
+              //justifyContent="center"
+              marginLeft={1}
               backgroundColor={backgroundColor}
               borderRadius="large"
               padding={2}
