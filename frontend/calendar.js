@@ -17,7 +17,6 @@ async function getOauthToken(userId) {
 }
 
 async function getCalendarId(oauthToken) {
-  console.log("the oauth token for request: " + oauthToken)
   const Url='https://www.googleapis.com/calendar/v3/users/me/calendarList';
   const otherParam={
     method : "GET",

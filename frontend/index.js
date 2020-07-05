@@ -39,6 +39,7 @@ const LoadPages = () => {
   const activeTable = base.getTableByIdIfExists(cursor.activeTableId);
 
   useEffect(() => {
+    console.log('this event has been triggered')
     if(!isUserLoggedIn) {
       const loginFunction = async () => {
         const logindata = await IsUserLoggedIn(currentUserId);
@@ -46,7 +47,7 @@ const LoadPages = () => {
       }
       loginFunction()
     }
-  });
+  }, [isUserLoggedIn]);
 
   // watching for a change in the page
   useEffect(() => {
@@ -57,7 +58,7 @@ const LoadPages = () => {
       }
       calendarPageFunction();
     }
-  }, [calendarPage]);
+  }, [calendarPage, isUserLoggedIn]);
 
   useEffect(() => {
     if(selectedRecordId) {
@@ -70,9 +71,14 @@ const LoadPages = () => {
     }
   }, [selectedRecordId]);
 
+  function handleChange(newValue) {
+   setIsUserLoggedIn(newValue);
+   setCalendarPage(newValue);
+  }
+
   // ready to display the page information
   if (isUserLoggedIn == false) {
-    return <LoginScreen userId={currentUserId} />;
+    return <LoginScreen userId={currentUserId} login={handleChange}/>;
   }
 
   if(recordPage) {

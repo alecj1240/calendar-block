@@ -1,8 +1,11 @@
-import {Text, Box} from '@airtable/blocks/ui';
+import {Text, Box, Button} from '@airtable/blocks/ui';
 import React from 'react';
 import Iframe from 'react-iframe';
 
-export default function LoginScreen(userId) {
+export default function LoginScreen({userId, login}) {
+  function handleChange(newValue) {
+    login(newValue);
+  }
   return (
     <div className="centerPage">
       <Box
@@ -16,7 +19,7 @@ export default function LoginScreen(userId) {
       >
         <Text size="xlarge">Welcome to The Google Calendar Block</Text>
         <Iframe 
-            url={"https://google-oauth.now.sh?user_id=" + userId["userId"]}
+            url={"https://google-oauth.now.sh?user_id=" + userId}
             width="100px"
             height="50px"
             display="initial"
@@ -24,6 +27,7 @@ export default function LoginScreen(userId) {
             frameBorder="0"
         />
       </Box>
+      <Button onClick={() => handleChange(null)}>I have logged in</Button>
     </div>
   );
 }
