@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import {Button, Dialog, Heading, Input, Box, Text} from "@airtable/blocks/ui";
 
 export default function CalendarDialog(paramDate) {
@@ -13,6 +13,13 @@ export default function CalendarDialog(paramDate) {
   } else {
     var selectedDate = (new Date(Date.parse(paramDate["selectedDate"]))).toISOString().split('.')[0]
   }
+
+  useEffect(() => {
+    setStartTime(selectedDate);
+    setEndTime(selectedDate);
+    setDescription(null);
+    setTitleValue(null);
+  }, [paramDate]);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [titleValue, setTitleValue] = useState("");

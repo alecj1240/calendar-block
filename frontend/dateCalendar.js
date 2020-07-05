@@ -51,7 +51,7 @@ export function GetRecordDate({activeTable, selectedRecordId, selectedFieldId, c
     }
 
     const cellValue = selectedRecord.getCellValue(selectedField);
-    
+
     if (!cellValue && plainIndexPage) {
       return (
         <div>
@@ -83,8 +83,8 @@ export function GetRecordDate({activeTable, selectedRecordId, selectedFieldId, c
     if (indexPage) {
       return (
         <div>
-            {indexPage}
-            <CalendarDialog selectedDate={cellValue}/>
+          {indexPage}
+          <CalendarDialog selectedDate={cellValue}/>
         </div>
       );
     }
