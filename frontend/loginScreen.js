@@ -72,6 +72,17 @@ export default function LoginScreen({userId, login}) {
       >
         <Button onClick={() => handleChange(null)}>See My Events</Button>
       </Box>
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        backgroundColor="white"
+        padding={0}
+        overflow="hidden"
+        margin={1}
+      >
+        <Text>* if you are seeing this screen even though you've logged in before, just click the "See My Events" button</Text>
+      </Box>
     </div>
   );
 }

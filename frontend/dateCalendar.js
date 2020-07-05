@@ -39,9 +39,6 @@ export function GetRecordDate({activeTable, selectedRecordId, selectedFieldId, c
       return <Text>Switch to a grid view to see previews of your calendar on certain days</Text>; 
     }
 
-    const cellValue = selectedRecord.getCellValue(selectedField);
-
-
     if ((selectedField.type !== 'date' && selectedField.type !== 'dateTime') && plainIndexPage) {
       return (
         <div>
@@ -53,12 +50,31 @@ export function GetRecordDate({activeTable, selectedRecordId, selectedFieldId, c
       return <Text>You have not selected a valid field type</Text>;
     }
 
+    const cellValue = selectedRecord.getCellValue(selectedField);
+    
     if (!cellValue && plainIndexPage) {
       return (
         <div>
           {plainIndexPage}
           <CalendarDialog />
         </div>
+      ); 
+    }
+
+    if (!cellValue && !plainIndexPage) {
+      return (
+        <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        backgroundColor="white"
+        padding={0}
+        height={200}
+        overflow="hidden"
+      >
+        <Loader scale={0.3} />
+        <Heading marginLeft={1}>Fetching data from you calendar...</Heading>
+      </Box>
       ); 
     }
 

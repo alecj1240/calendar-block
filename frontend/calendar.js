@@ -96,16 +96,13 @@ async function getTodayEvents(calendarId, oauthToken, selectedDate) {
 
 export async function IndexCalendar(userId, selectedDate = {}) {
   const checkUser = await IsUserLoggedIn(userId);
-  if (typeof selectedDate == 'object') {
+
+  if (typeof selectedDate == 'object' || selectedDate == null || Number.isNaN(selectedDate)) {
     selectedDate = (new Date(Date.now()))
     selectedDate = selectedDate.setMinutes(selectedDate.getMinutes() - (new Date()).getTimezoneOffset());
   }
 
   const oauthTokenRes = await getOauthToken(userId);
-
-  if (typeof oauthTokenRes["records"][0] == 'undefined' && checkUser == false) {
-    return <LoginScreen userId={userId} />
-  }
 
   const calendarId = await getCalendarId(oauthTokenRes["records"][0]["fields"]["oauth-token"]);
   const eventsRes = await getTodayEvents(calendarId, oauthTokenRes["records"][0]["fields"]["oauth-token"], selectedDate);
@@ -139,7 +136,7 @@ export async function IndexCalendar(userId, selectedDate = {}) {
           displayString = "";
         }
         return (
-          <div>
+          <div key={event[1]}>
             <Box
               display="flex"
               //alignItems="center"

@@ -1,4 +1,4 @@
-import {initializeBlock, useBase, useWatchable, useLoadable, Loader, Box, Heading} from '@airtable/blocks/ui';
+import {initializeBlock, useBase, useWatchable, useLoadable, Loader, Box, Heading, Text} from '@airtable/blocks/ui';
 import {session,cursor} from '@airtable/blocks';
 import React, {useState, useEffect}from 'react';
 import LoginScreen from './loginScreen.js';
@@ -38,8 +38,11 @@ const LoadPages = () => {
   const base = useBase();
   const activeTable = base.getTableByIdIfExists(cursor.activeTableId);
 
+  if (!activeTable) {
+    return <Text>There is no table selected...</Text>;
+  }
+
   useEffect(() => {
-    console.log('this event has been triggered')
     if(!isUserLoggedIn) {
       const loginFunction = async () => {
         const logindata = await IsUserLoggedIn(currentUserId);
