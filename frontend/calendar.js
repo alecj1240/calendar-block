@@ -104,6 +104,10 @@ export async function IndexCalendar(userId, selectedDate = {}) {
 
   const oauthTokenRes = await getOauthToken(userId);
 
+  if (typeof oauthTokenRes["records"][0] == 'undefined' && checkUser == false) {
+    return <LoginScreen userId={userId} />
+  }
+
   const calendarId = await getCalendarId(oauthTokenRes["records"][0]["fields"]["oauth-token"]);
   const eventsRes = await getTodayEvents(calendarId, oauthTokenRes["records"][0]["fields"]["oauth-token"], selectedDate);
   const displayString = (new Date(addTimeZoneToDate((new Date(selectedDate)).toISOString()))).toDateString();

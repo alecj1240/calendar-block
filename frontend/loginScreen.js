@@ -79,9 +79,20 @@ export default function LoginScreen({userId, login}) {
         backgroundColor="white"
         padding={0}
         overflow="hidden"
-        margin={1}
+        margin={2}
       >
-        <Text>* if you are seeing this screen even though you've logged in before, just click the "See My Events" button</Text>
+        <Text textColor="light" textAlign="center">* if you are seeing this screen even though you've logged in before, just click the "See My Events" button</Text>
+      </Box>
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        backgroundColor="white"
+        padding={0}
+        overflow="hidden"
+        margin={2}
+      >
+        <Text textColor="light" textAlign="center">* if you can't see the Google Login button, your browser doesn't support iFrames. You'll need to change this in your browser settings (or use Chrome for a quick-fix)</Text>
       </Box>
     </div>
   );
